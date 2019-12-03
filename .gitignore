@@ -33,3 +33,5 @@
 
 # Project Files
 *.cbp
+*.depend
+*.layout
