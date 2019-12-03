@@ -115,7 +115,75 @@ void Part1(std::vector<std::string> wire1, std::vector<std::string> wire2)
 
 void Part2(std::vector<std::string> wire1, std::vector<std::string> wire2)
 {
+    std::vector<coord> corners1, corners2;
+    long x = 0, y = 0;
+    // push in starting coordinates
+    corners1.push_back(coord(x,y));
+    corners2.push_back(coord(x,y));
 
+    // get wire1 corners
+    for( auto str : wire1)
+    {
+        char dir = str[0];
+        long dist = atoi(str.substr(1).c_str());
+        if(dir == 'U')
+            y += dist;
+        if(dir == 'D')
+            y -= dist;
+        if(dir == 'R')
+            x += dist;
+        if(dir == 'L')
+            x -= dist;
+        corners1.push_back(coord(x,y));
+    }
+
+    // get wire2 corners
+    x = 0, y = 0;
+    for( auto str : wire2)
+    {
+        char dir = str[0];
+        long dist = atoi(str.substr(1).c_str());
+        if(dir == 'U')
+            y += dist;
+        if(dir == 'D')
+            y -= dist;
+        if(dir == 'R')
+            x += dist;
+        if(dir == 'L')
+            x -= dist;
+        corners2.push_back(coord(x,y));
+    }
+
+    long dist1 = 0, dist2 = 0;
+    std::vector<long> distances;
+    for(unsigned int i1 = 0; i1 < corners1.size()-1; i1++)
+    {
+        dist2 = 0;
+        for(unsigned int i2 = 0; i2 < corners2.size()-1; i2++)
+        {
+            auto inter = getIntersection( corners1[i1], corners1[i1+1], corners2[i2], corners2[i2+1] );
+            if( inter != coord(0,0) )
+            {
+                dist1 += abs( inter.first-corners1[i1].first ) + abs( inter.second-corners1[i1].second );
+                dist2 += abs( inter.first-corners2[i2].first ) + abs( inter.second-corners2[i2].second );
+                distances.push_back(dist1+dist2);
+                // keep going on second wire, go back on first wire
+                dist1 -= abs( inter.first-corners1[i1].first ) + abs( inter.second-corners1[i1].second );
+                dist2 += abs( inter.first-corners2[i2+1].first ) + abs( inter.second-corners2[i2+1].second );
+            }
+            else
+            {
+                dist2 += abs( corners2[i2+1].first-corners2[i2].first ) + abs( corners2[i2+1].second-corners2[i2].second );
+            }
+        }
+        dist1 += abs( corners1[i1+1].first-corners1[i1].first ) + abs( corners1[i1+1].second-corners1[i1].second );
+    }
+
+    auto mindist = std::min_element(std::begin(distances), std::end(distances));
+    if(!distances.empty())
+    {
+        std::cout << "Part 2:" << std::endl << "\t" << *mindist << std::endl << std::endl;
+    }
 }
 
 int main(int argc, char *argv[])
