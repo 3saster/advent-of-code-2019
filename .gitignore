@@ -36,3 +36,6 @@
 *.cbp
 *.depend
 *.layout
+
+# Specific Days
+Day 8/*.png
