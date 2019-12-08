@@ -1,5 +1,5 @@
+
 import textwrap
-from PIL import Image
 
 def Part1(input: str, width: int, height: int) -> None:	
     layers = textwrap.wrap(input, width*height)
@@ -16,16 +16,13 @@ def Part2(input: str, width: int, height: int) -> None:
         picture.append( next(val for val in pixels if val != '2') )
     picture = list(map(int, picture))
 
-    # Save the image
-    img = Image.new('1', (width, height))
-    pixels = img.load()
-    for i in range(img.size[0]):
-        for j in range(img.size[1]):
-            pixels[i, j] = picture[i+j*width]
-    img.save('Part2.png')
-
     print("Part 2:")
-    print("\tSee Part2.png\n")
+    for j in range(height):
+        print("\t",end='')
+        for i in range(width):
+            print('██' if picture[i+j*width]==1 else '  ',end='')
+        print()
+    print()
 
 with open('input.txt') as fp:
 	lines = fp.read()
