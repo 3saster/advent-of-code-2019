@@ -29,14 +29,9 @@ class intcodeComputer:
             except: p1 = 0
             try: p2 = self.getModeVal(self.comp[self.i+2], mode2)
             except: p2 = 0
-            try: p3 = self.getModeVal(self.comp[self.i+3], mode3)
-            except: p3 = 0
             # these are always address/relative mode parameters
             try: p1_s  = self.comp[self.i+1] + self.base if mode1 == 2 else \
                          self.comp[self.i+1]
-            except: pass
-            try: p2_s  = self.comp[self.i+2] + self.base if mode2 == 2 else \
-                         self.comp[self.i+2]
             except: pass
             try: p3_s  = self.comp[self.i+3] + self.base if mode3 == 2 else \
                          self.comp[self.i+3]
