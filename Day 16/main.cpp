@@ -45,15 +45,21 @@ void Part2( vector<long> input )
     for(int i = 0; i < 10000; i++)
         output.insert(output.end(), input.begin(), input.end());
 
+    long offset = 1000000*output[0] + 100000*output[1] + 10000*output[2] + 1000*output[3] + 100*output[4] + 10*output[5] + 1*output[6];
     for(int i = 0; i < 100; i++)
     {
-        output = cycle(output);
-        cout << i << endl;
+        long sum = 0;
+        for(long k = output.size()-1; k >= offset; k--)
+        {
+            sum += output[k];
+            sum %= 10;
+            output[k] = sum;
+        }
     }
 
     cout << "Part 2:\n\t";
     for(int i=0; i < 8; i++)
-        cout << output[i];
+        cout << output[offset+i];
     cout << endl << endl;
 }
 
