@@ -4,27 +4,13 @@ import operator
 
 dirs = ['NORTH', 'EAST', 'SOUTH', 'WEST']
 dir = {'NORTH':1, 'SOUTH':2, 'WEST':3, 'EAST':4}
-tile = {'EMPTY':0, 'WALL':1, 'OXYGEN':2}
+move = {'NORTH':(0,1), 'SOUTH':(0,-1), 'WEST':(1,0), 'EAST':(-1,0)}
 
-def drawGrid(grid: Dict[Tuple,int], curr: Tuple = None) -> None:
-    offset = ( min(grid.keys(),key=lambda x:x[0])[0], min(grid.keys(),key=lambda x:x[1])[1] )
-    corner = ( max(grid.keys(),key=lambda x:x[0])[0], max(grid.keys(),key=lambda x:x[1])[1] )
-
-    for y in reversed(range(offset[1],corner[1]+1)):
-        for x in range(offset[0],corner[0]+1):
-            pos = (x,y)
-            try:
-                if( pos == curr ):
-                    print('R',end='')
-                elif( grid[pos] == tile['EMPTY'] ):
-                    print('.',end='')
-                elif( grid[pos] == tile['WALL'] ):
-                    print('█',end='')
-                elif( grid[pos] == tile['OXYGEN'] ):
-                    print('O',end='')
-            except KeyError:
-                print('?',end='')
-        print()
+class Node:
+    def __init__(self, value) -> None:
+        self.value = value
+        self.parent = None
+        self.children = list()
 
 def getSurroundings(comp) -> List[int]:
     output = list()
@@ -37,45 +23,44 @@ def getSurroundings(comp) -> List[int]:
 
         copyComp.input = [ dir[d] ]
         copyComp.compute()
-        # Space
-        if(copyComp.output[-1] == 1):
-            output.append(tile['EMPTY'])
-        # Wall
-        elif(copyComp.output[-1] == 0):
-            output.append(tile['WALL'])
-        # Oxygen
-        elif(copyComp.output[-1] == 2):
-            output.append(tile['OXYGEN'])
+        output.append(copyComp.output[-1])
     return output
 
-def travel(comp, direction: str):
-    path = list()
+def findTree(top, value):
+    if top.value == value:
+        return top
+    
+    for child in top.children:
+        nodeVal = findTree(child, value)
+        if nodeVal and nodeVal.value == value:
+            return nodeVal
 
+    return None
+
+def makeTree(comp, pos: Tuple = (0,0), direction: str = None, parent = None):
     copyComp = intcodeComputer(comp.comp)
     copyComp.i = comp.i
-    copyComp.output = comp.output
+    copyComp.output = []
     copyComp.paused = comp.paused
     copyComp.base = comp.base
 
-    copyComp.input = [ dir[direction] ]
-    copyComp.compute()
-    # Wall
-    if(copyComp.output[-1] == 0 ):
-        return (False,0)
-    # Oxygen
-    elif(copyComp.output[-1] == 2 ):
-        return (True,1)
-    else:
-        newDirs = [dirs[a] for a in [i for i,v in enumerate(getSurroundings(copyComp)) if v!=1]]
-        try: newDirs.remove( dirs[ (dirs.index(direction)+2) % len(dirs) ] )
-        except ValueError: pass
-        for d in newDirs:
-            path.append(travel(copyComp,d))
+    if direction:
+        copyComp.input = [ dir[direction] ]
+        copyComp.compute() 
 
-    if path and ( moves := [p[1] for p in path if p[0] == True] ):
-        return (True,moves[0]+1)
-    else: 
-        return (False,0)
+        if copyComp.output.pop(0) == 2:
+            makeTree.O2 = pos
+
+    newDirs = [dirs[a] for a in [i for i,v in enumerate(getSurroundings(copyComp)) if v!=0]]
+    try: newDirs.remove( dirs[ (dirs.index(direction)+2) % len(dirs) ] )
+    except ValueError: pass
+
+    top = Node( pos )
+    top.parent = parent
+    for d in newDirs:
+        top.children.append( makeTree(copyComp, addTuple(pos,move[d]), d, top) )
+
+    return top
     
 def addTuple(t1: Tuple, t2: Tuple) -> Tuple:
    return tuple(map(operator.add, t1, t2))
@@ -83,10 +68,18 @@ def addTuple(t1: Tuple, t2: Tuple) -> Tuple:
 def Part1(input: List[int]) -> None:
     comp = intcodeComputer(input)
 
-    newDirs = [dirs[a] for a in [i for i,v in enumerate(getSurroundings(comp)) if v!=1]]
+    tree = makeTree(comp)
+    O2Node = findTree(tree,makeTree.O2)
+
+    # Find O2 node depth
+    depth = 0
+    top = O2Node
+    while top.parent:
+        top = top.parent
+        depth += 1
 
     print("Part 1:")
-    print("\t" + str( travel(comp,newDirs[0])[1] ) + "\n")
+    print("\t" + str(depth) + "\n")
 	
 def Part2(input: List[int]) -> None:	
     print("Part 2:")
